@@ -31,6 +31,6 @@ async function bootstrap() {
   console.log("🚀 Aplicación iniciada en http://localhost:3000");
   console.log("📚 Documentación Swagger disponible en http://localhost:3000/api");
   
-  await app.listen(3000);
+  const port = process.env.PORT || 3000; await app.listen(port, "0.0.0.0");
 }
 bootstrap();
