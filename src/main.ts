@@ -12,7 +12,11 @@ async function bootstrap() {
     .setVersion("1.0")
     .addTag("tasks", "Operaciones CRUD para tareas")
     .addTag("status", "Estado del sistema y estadísticas")
+    .addTag("auth", "Autenticación y gestión de usuarios")
+    .addTag("users", "Gestión de perfiles de usuario")
     .addServer("http://localhost:3000", "Servidor de desarrollo")
+    .addServer("https://forgetful-production-a037.up.railway.app", "Servidor de producción")
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
