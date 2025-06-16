@@ -27,14 +27,12 @@ export class AuthService {
         googleId: googleUser.googleId,
         email: googleUser.email,
         name: googleUser.name,
-        avatarUrl: googleUser.avatarUrl || null,
       });
       user = await this.userRepository.save(user);
     } else {
       // Actualizar información del usuario existente
       user.email = googleUser.email;
       user.name = googleUser.name;
-      user.avatarUrl = googleUser.avatarUrl || null;
       user = await this.userRepository.save(user);
     }
 

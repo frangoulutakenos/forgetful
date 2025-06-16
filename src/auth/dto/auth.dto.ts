@@ -1,44 +1,48 @@
-import { IsString, IsEmail, IsOptional, IsUUID } from 'class-validator';
+import { IsEmail, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class GoogleUserDto {
-  @ApiProperty({ description: 'Google ID del usuario' })
+  @ApiProperty({ example: '1234567890' })
   @IsString()
   googleId: string;
 
-  @ApiProperty({ description: 'Email del usuario' })
+  @ApiProperty({ example: 'user@example.com' })
   @IsEmail()
   email: string;
 
-  @ApiProperty({ description: 'Nombre completo del usuario' })
+  @ApiProperty({ example: 'John Doe' })
   @IsString()
   name: string;
-
-  @ApiProperty({ description: 'URL del avatar', required: false })
-  @IsOptional()
-  @IsString()
-  avatarUrl?: string;
 }
 
 export class CreateTokenDto {
-  @ApiProperty({ description: 'Nombre del token/cliente', example: 'Claude Web' })
+  @ApiProperty({ example: 'Claude Web' })
   @IsString()
   name: string;
-
-  @ApiProperty({ description: 'ID del usuario' })
-  @IsUUID()
-  userId: string;
 }
 
-export class AuthResponseDto {
-  @ApiProperty({ description: 'Token de acceso permanente' })
+export class TokenResponseDto {
+  @ApiProperty()
   token: string;
 
-  @ApiProperty({ description: 'Información del usuario' })
+  @ApiProperty()
   user: {
     id: string;
     email: string;
     name: string;
-    avatarUrl?: string;
   };
-} 
+}
+
+export class UserTokenDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  lastUsedAt: Date;
+}
