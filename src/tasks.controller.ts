@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpStatus } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpStatus, Req } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from "@nestjs/swagger";
 import { TasksService } from "./tasks/tasks.service";
 import { CreateTaskDto, UpdateTaskDto } from "./tasks/dto/task.dto";
+import { Request } from 'express';
 
 @ApiTags("tasks")
 @Controller("tasks")
@@ -57,8 +58,9 @@ export class TasksController {
       }
     }
   })
-  async getTaskStats() {
-    const stats = await this.tasksService.getStats("123");
+  async getTaskStats(@Req() req: Request) {
+    const userId = req.user?.id || "anonymous";
+    const stats = await this.tasksService.getStats(userId);
     const status = this.tasksService.getStatus();
     return {
       message: `Statistics retrieved successfully (using ${status.mode})`,
@@ -72,7 +74,7 @@ export class TasksController {
   @Get()
   @ApiOperation({ 
     summary: "Obtener todas las tareas",
-    description: "Devuelve todas las tareas, opcionalmente filtradas por estado"
+    description: "Devuelve todas las tareas del usuario autenticado, opcionalmente filtradas por estado"
   })
   @ApiQuery({ 
     name: "status", 
@@ -105,8 +107,9 @@ export class TasksController {
       }
     }
   })
-  async getAllTasks(@Query("status") status?: string) {
-    const tasks = await this.tasksService.findAll(status, "123");
+  async getAllTasks(@Query("status") status?: string, @Req() req?: Request) {
+    const userId = req?.user?.id || "anonymous";
+    const tasks = await this.tasksService.findAll(status, userId);
     const serviceStatus = this.tasksService.getStatus();
     return {
       message: `Tasks retrieved successfully (using ${serviceStatus.mode})`,
@@ -121,7 +124,7 @@ export class TasksController {
   @Post()
   @ApiOperation({ 
     summary: "Crear nueva tarea",
-    description: "Crea una nueva tarea con los datos proporcionados"
+    description: "Crea una nueva tarea con los datos proporcionados para el usuario autenticado"
   })
   @ApiBody({ type: CreateTaskDto })
   @ApiResponse({ 
@@ -146,12 +149,13 @@ export class TasksController {
       }
     }
   })
-  async createTask(@Body() createTaskDto: CreateTaskDto) {
+  async createTask(@Body() createTaskDto: CreateTaskDto, @Req() req: Request) {
+    const userId = req.user?.id || "anonymous";
     const task = await this.tasksService.create({
       title: createTaskDto.title,
       detail: createTaskDto.detail,
       priority: createTaskDto.priority,
-      userId: createTaskDto.userId || "123"
+      userId: userId
     });
     const status = this.tasksService.getStatus();
     return {
@@ -166,7 +170,7 @@ export class TasksController {
   @Get(":id")
   @ApiOperation({ 
     summary: "Obtener tarea por ID",
-    description: "Devuelve una tarea específica por su ID único"
+    description: "Devuelve una tarea específica por su ID único del usuario autenticado"
   })
   @ApiParam({ 
     name: "id", 
@@ -181,9 +185,10 @@ export class TasksController {
     status: 404, 
     description: "Tarea no encontrada"
   })
-  async getTask(@Param("id") id: string) {
+  async getTask(@Param("id") id: string, @Req() req: Request) {
     try {
-      const task = await this.tasksService.findOne(id, "123");
+      const userId = req.user?.id || "anonymous";
+      const task = await this.tasksService.findOne(id, userId);
       const status = this.tasksService.getStatus();
       if (!task) {
         return {
@@ -211,7 +216,7 @@ export class TasksController {
   @Patch(":id")
   @ApiOperation({ 
     summary: "Actualizar tarea",
-    description: "Actualiza los campos especificados de una tarea existente"
+    description: "Actualiza los campos especificados de una tarea existente del usuario autenticado"
   })
   @ApiParam({ 
     name: "id", 
@@ -227,9 +232,10 @@ export class TasksController {
     status: 404, 
     description: "Tarea no encontrada"
   })
-  async updateTask(@Param("id") id: string, @Body() updateTaskDto: UpdateTaskDto) {
+  async updateTask(@Param("id") id: string, @Body() updateTaskDto: UpdateTaskDto, @Req() req: Request) {
     try {
-      const task = await this.tasksService.update(id, updateTaskDto, "123");
+      const userId = req.user?.id || "anonymous";
+      const task = await this.tasksService.update(id, updateTaskDto, userId);
       const status = this.tasksService.getStatus();
       return {
         message: `Task updated successfully (using ${status.mode})`,
@@ -250,7 +256,7 @@ export class TasksController {
   @Patch(":id/toggle")
   @ApiOperation({ 
     summary: "Alternar estado de completado",
-    description: "Cambia el estado de completado de una tarea (de completada a pendiente o viceversa)"
+    description: "Cambia el estado de completado de una tarea del usuario autenticado (de completada a pendiente o viceversa)"
   })
   @ApiParam({ 
     name: "id", 
@@ -265,9 +271,10 @@ export class TasksController {
     status: 404, 
     description: "Tarea no encontrada"
   })
-  async toggleTask(@Param("id") id: string) {
+  async toggleTask(@Param("id") id: string, @Req() req: Request) {
     try {
-      const task = await this.tasksService.toggle(id, "123");
+      const userId = req.user?.id || "anonymous";
+      const task = await this.tasksService.toggle(id, userId);
       const status = this.tasksService.getStatus();
       return {
         message: `Task status toggled successfully (using ${status.mode})`,
@@ -288,7 +295,7 @@ export class TasksController {
   @Delete(":id")
   @ApiOperation({ 
     summary: "Eliminar tarea",
-    description: "Elimina permanentemente una tarea del sistema"
+    description: "Elimina permanentemente una tarea del usuario autenticado del sistema"
   })
   @ApiParam({ 
     name: "id", 
@@ -303,9 +310,10 @@ export class TasksController {
     status: 404, 
     description: "Tarea no encontrada"
   })
-  async deleteTask(@Param("id") id: string) {
+  async deleteTask(@Param("id") id: string, @Req() req: Request) {
     try {
-      const deletedTask = await this.tasksService.remove(id, "123");
+      const userId = req.user?.id || "anonymous";
+      const deletedTask = await this.tasksService.remove(id, userId);
       const status = this.tasksService.getStatus();
       return {
         message: `Task deleted successfully (using ${status.mode})`,

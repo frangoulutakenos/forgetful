@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from "typeorm";
+import { User } from "../../users/entities/user.entity";
 
 @Entity("tasks")
 export class Task {
@@ -17,8 +18,12 @@ export class Task {
   @Column({ type: "boolean", default: false })
   isDone: boolean;
 
-  @Column({ type: "varchar", length: 255 })
+  @Column({ type: "uuid" })
   userId: string;
+
+  @ManyToOne(() => User, user => user.tasks, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
   @CreateDateColumn()
   createdAt: Date;
